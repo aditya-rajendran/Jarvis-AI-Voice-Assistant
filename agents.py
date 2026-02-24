@@ -47,3 +47,42 @@ if __name__ == "__main__":
             entrypoint_fnc=entrypoint
         )
     )
+
+
+class Assistant(Agent):
+    def __init__(self) -> None:
+        super().__init__(
+            instructions=AGENT_INSTRUCTION,
+            llm=openai.LLM(
+                model="gpt-4o-mini",
+                temperature=0.8,
+            ),
+            tools=[
+                get_weather,
+                search_web,
+            ],
+        )
+
+
+async def entrypoint(ctx: agents.JobContext):
+    session = AgentSession()
+
+    await session.start(
+        room=ctx.room,
+        agent=Assistant(),
+        room_input_options=RoomInputOptions(
+            video_enabled=True
+        )
+    )
+
+    await session.generate_reply(
+        instructions=SESSION_INSTRUCTION
+    )
+
+
+if __name__ == "__main__":
+    agents.cli.run_app(
+        agents.WorkerOptions(
+            entrypoint_fnc=entrypoint
+        )
+    )
